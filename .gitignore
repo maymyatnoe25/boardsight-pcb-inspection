@@ -218,3 +218,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Data and media stay local
+data/
+*.tar
+*.zip
+*.mp4
+*.mov
+*.pt
+*.pth
