@@ -42,9 +42,28 @@ boards only?
   about 14 to 25 images.
 - Failures (missed defects and false alarms) are shown as images in the README.
 
-## Decisions to be recorded here (not yet made)
+## Decisions made on Day 2 (before any model was run)
 
-- The split design.
-- The decision threshold rule.
-- The success criteria for each experiment.
-------------------------------------------------------------
+Data finding: defect-type labels exist. PCB1 has 4 types (melt, missing, bent, scratch);
+91 defective images have one type and 9 have two or three. E2 is therefore possible.
+In E2, "holding out a type" removes every image whose label contains that type.
+
+Split (per board, seed 0, written by src/make_split.py to eval/split_<board>.csv):
+- Normal images: 200 test, 200 validation, the rest (604 for PCB1) for training.
+- Defective images: 30 test (stratified by type), the other 70 are the development pool.
+- The anomaly detector uses train_normal only.
+- The CNN uses train_normal plus defective images drawn from the development pool.
+  Defective images not used for training serve as its validation set.
+- The 30 test defects and 200 test normals are scored once, at the end.
+
+Threshold rule: the threshold is the highest score that reaches at least 90% recall on
+validation defects. The resulting false-alarm rate on validation normals is reported.
+The same threshold is applied unchanged to the test set.
+
+Primary metrics: image-level AUROC (no threshold), and the false-negative rate and
+false-alarm rate at the threshold rule. Differences between models are called meaningful
+only if a paired bootstrap 95% interval for the difference excludes zero.
+
+Limits stated in advance: the test set has only 30 defective images (about 14 melt and
+4 to 5 of each other type), so per-type test results are not interpretable. E2 and E3
+are run on the development pool and reported with bootstrap intervals.
