@@ -107,6 +107,8 @@ def main():
         print("\nSmoke test only: nothing was saved.")
         return
     np.save(f"data/cache/anomaly_{args.board}_val_scores.npy", scores)
+    pd.DataFrame({"image": vdf["image"], "role": vdf["role"], "label": vdf["label"],
+                  "score": scores}).to_csv(f"eval/scores_anomaly_{args.board}_val.csv", index=False)
     row = dict(model="patch-memory-bank-resnet18", board=args.board, size=args.size,
                fraction=args.fraction, bank_patches=len(bank), auroc=round(auc, 4),
                ci_lo=round(lo, 4), ci_hi=round(hi, 4), search_ms_per_image=round(sec * 1000),

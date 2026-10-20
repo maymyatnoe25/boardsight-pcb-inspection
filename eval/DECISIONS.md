@@ -67,3 +67,21 @@ only if a paired bootstrap 95% interval for the difference excludes zero.
 Limits stated in advance: the test set has only 30 defective images (about 14 melt and
 4 to 5 of each other type), so per-type test results are not interpretable. E2 and E3
 are run on the development pool and reported with bootstrap intervals.
+## Decisions made on Day 4 (before any CNN was trained)
+
+Comparison design: 5-fold cross-validation over the 70 development defects, stratified
+by defect type (any image with several types forms one "multi" group), seed 0.
+For each fold k, the CNN is trained on train_normal plus the development defects outside
+fold k, and scored on the development defects in fold k plus the 200 validation normals.
+The anomaly detector is scored on exactly the same images. Both models' AUROC is
+computed per fold, and their difference is summarised as the mean over folds with a
+paired bootstrap 95% interval (resampling defects within each fold and the 200 normals).
+
+CNN settings, fixed now and not tuned on these folds: ResNet18 with ImageNet weights,
+input 288 x 384, AdamW (learning rate 1e-4, weight decay 1e-4), batch size 16, 6 epochs,
+loss weighted by the normal-to-defect ratio, random shifts of up to 8 pixels and
+brightness jitter of about 10%. No early stopping and no hyperparameter search.
+If training fails outright (for example the loss does not fall), any change is recorded
+here with the reason.
+
+Not yet decided: E2 and E3 design (Day 5).

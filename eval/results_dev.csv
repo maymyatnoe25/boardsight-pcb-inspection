@@ -1,2 +1,3 @@
 model,board,size,fraction,bank_patches,auroc,ci_lo,ci_hi,search_ms_per_image,val_defect,val_normal
 patch-memory-bank-resnet18,pcb1,"288,384",0.05,52185,0.9756,0.9587,0.9889,344,70,200
+
