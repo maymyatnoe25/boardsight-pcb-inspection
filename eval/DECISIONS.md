@@ -133,3 +133,26 @@ simplicity and speed. The choice is then fixed before the test set is scored.
 Limits stated in advance: one memory-bank seed per configuration, so differences of a
 few thousandths are not interpretable; the default is repeated with seeds 1 and 2 to
 show the size of that noise.
+## Decisions made on Day 7 (before the head-to-head was recomputed)
+
+Selection rule applied: the highest validation AUROC in the E5 grid is 384x512 with a 5%
+memory bank (0.9914); the default scored 0.9756 (0.9756, 0.9794, 0.9759 over three seeds).
+The margin of 0.016 exceeds the 0.005 tolerance, so the final anomaly configuration is
+384x512, 5% bank, seed 0. Noted but not chosen: 384x512 with a 1% bank (AUROC 0.9841,
+295 ms per image) is cheaper.
+
+Limits stated in advance: the configuration was picked as the best of eight on 70 validation
+defects, so its validation score is optimistic. The CNN was not tuned at higher resolution
+(fixed at 288x384), so the comparison favours the anomaly detector's tuned setting.
+
+Head-to-head: the CNN's out-of-fold scores from the five E3 "all labels" runs are paired with
+the final anomaly detector on the same images. Per fold, I report AUROC, the false-alarm
+rate at the threshold that reaches 90% recall (highest score reaching at least
+ceil(0.9 x defects)), and the share of defects missed at a 5% false-alarm rate.
+
+Thresholds for the test set (fixed now, saved by src.head_to_head):
+- anomaly detector: the highest score reaching 90% recall on all 70 development defects;
+- CNN: the mean of the five per-fold thresholds at 90% recall, applied to a CNN trained once
+  on all 70 development defects. This assumes the five fold models and the final model share
+  a score scale; the spread of the five thresholds is reported as a check.
+The test set is scored once, on a later day, after the Grad-CAM experiment (E4).
