@@ -113,3 +113,23 @@ defects. The test set is scored once, after all of this.
 
 Known risks, stated in advance: possible near-duplicate images across folds; a single
 seed per run; the test set has only 30 defects.
+## Decisions made on Day 6 (before the ablations were run)
+
+Already seen: E2 and E3 results (CNN needs about 25 labelled defects to match the anomaly
+detector, 56 to beat it slightly; only melt shows a clear gap when a type is held out).
+
+E5 grid for the anomaly detector (validation images only, seed 0):
+image size 192x256, 288x384, 384x512 and memory-bank fraction 0.01, 0.05, 0.2, except that
+384x512 with 0.2 is skipped for speed. Recorded per configuration: image-level AUROC with
+bootstrap interval, pixel-level AUROC against the ground-truth masks, a pointing score
+(share of defective images whose strongest heatmap peak lies inside the true defect or
+within 5% of the image height of it), nearest-neighbour search time, and end-to-end time
+per image.
+
+Selection rule: the final anomaly configuration is the one with the highest validation
+AUROC. If it is within 0.005 of the default (288x384, 0.05), the default is kept for
+simplicity and speed. The choice is then fixed before the test set is scored.
+
+Limits stated in advance: one memory-bank seed per configuration, so differences of a
+few thousandths are not interpretable; the default is repeated with seeds 1 and 2 to
+show the size of that noise.
