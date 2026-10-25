@@ -1,0 +1,5 @@
+{
+ "rule": "95th percentile of validation-normal scores; flag if strictly above",
+ "cnn": -0.5596405863761902,
+ "anomaly": 1.885602855
+}

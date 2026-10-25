@@ -177,3 +177,25 @@ kept as a secondary number and is not used for the comparison.
 Stated now: with 30 test defects, one defect is 3.3 percentage points of recall, and the
 test set has about 14 melt defects and 4 to 5 of each other type, so per-type test results
 are not interpretable.
+## Decisions made on Day 8 (before the test set was scored)
+
+Seen before writing this: the E3 comparison against the final detector (CNN never beats it;
+matches only at 56 labels), and the validation galleries.
+
+E4, localisation: for each of the 70 development defects, the strongest peak of a map is
+a "pointing hit" if it lies inside the true defect mask, or within 5% of the image height of
+it ("slack"); a strict version uses zero slack. Maps compared: the final anomaly heatmap
+(384x512, 5% bank) and Grad-CAM from layer3 and from layer4 of the CNN. Both layers are
+reported and neither is selected after the fact. Grad-CAM uses the out-of-fold CNN (5 folds,
+same settings and seeds as the E3 "all" runs; CPU training is not bit-exact, so small
+differences from those runs are possible). Differences are summarised with a bootstrap over
+defects (95% interval). Pixel AUROC is not used, since it was above 0.99 for every setting.
+
+Prediction written in advance: both Grad-CAM maps will point worse than the anomaly heatmap,
+because their cells (16 and 32 pixels at 288x384) are as large as or larger than the median
+defect (about 15 pixels).
+
+Final models and thresholds (this replaces the amendment's wording only where stated):
+the final CNN is trained once on train_normal plus all 70 development defects. The decision
+threshold of each model is the 95th percentile of its scores on the 200 validation normals;
+an image is flagged if its score is strictly above it. Weights are not committed to Git.
