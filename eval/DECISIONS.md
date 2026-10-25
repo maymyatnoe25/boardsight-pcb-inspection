@@ -156,3 +156,24 @@ Thresholds for the test set (fixed now, saved by src.head_to_head):
   on all 70 development defects. This assumes the five fold models and the final model share
   a score scale; the spread of the five thresholds is reported as a check.
 The test set is scored once, on a later day, after the Grad-CAM experiment (E4).
+## Amendment on Day 8 (made before any test image was scored)
+
+The Day 7 check failed. The five CNN fold thresholds at 90% recall were 1.31, 1.48, 1.13,
+0.98 and 2.95 (about a threefold range), so the planned rule (average them and apply the
+mean to a CNN trained on all 70 development defects) is not trustworthy. It is replaced.
+
+New rule for both models: the decision threshold is the 95th percentile of the model's
+scores on the 200 validation normals (a 5% false-alarm target). An image is flagged if its
+score is strictly above the threshold. The final CNN is trained once on train_normal plus
+all 70 development defects (288x384, 6 epochs, seed 0, the Day 4 settings), so the 200
+validation normals were not used in its training. The final anomaly detector is
+384x512 with a 5% bank, seed 0.
+
+Reported on the test set, scored once: defects caught out of 30 (exact 95% interval),
+false-alarm rate on the 200 test normals (exact 95% interval), and AUROC (bootstrap
+interval). The earlier anomaly threshold (1.943, 90% recall on development defects) is
+kept as a secondary number and is not used for the comparison.
+
+Stated now: with 30 test defects, one defect is 3.3 percentage points of recall, and the
+test set has about 14 melt defects and 4 to 5 of each other type, so per-type test results
+are not interpretable.
