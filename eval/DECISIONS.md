@@ -85,3 +85,31 @@ If training fails outright (for example the loss does not fall), any change is r
 here with the reason.
 
 Not yet decided: E2 and E3 design (Day 5).
+## Decisions made on Day 5 (before E2 and E3 were run)
+
+Already seen when this was written: the 5-fold comparison on the development defects.
+CNN mean AUROC 0.992, anomaly detector 0.976, mean difference +0.016 (95% paired
+bootstrap interval +0.003 to +0.031). Neither model has been tuned.
+
+E2, leave-one-type-out: for each of melt, missing, bent, scratch, remove every
+development defect whose label contains that type from CNN training. The CNN trains on
+train_normal plus the remaining development defects, and is scored on the removed
+defects plus the 200 validation normals. The anomaly detector is scored on the same
+images. Images with several types appear in several test sets. Settings as on Day 4.
+
+E3, learning curve: for each of the 5 folds, the CNN trains on train_normal plus a random
+subset of 5, 10 or 25 of the development defects outside the fold, or on all of them
+(about 56). One random subset per setting (seed 1000 + 10 x fold + n), so the curve is
+noisy. Scored on the fold's defects plus the 200 validation normals, as on Day 4.
+The crossover point is the smallest n at which the paired 95% interval for
+(CNN minus anomaly) lies above zero. If there is none, that is reported.
+
+Thresholds (planned, applied on Day 6): the CNN's threshold is chosen from its
+out-of-fold scores, because its in-sample scores on development defects are meaningless.
+The anomaly detector's threshold comes from the validation scores. For both, the highest
+score that reaches 90% recall on development defects; the false-alarm rate on the
+validation normals is reported. The final CNN is trained once on all 70 development
+defects. The test set is scored once, after all of this.
+
+Known risks, stated in advance: possible near-duplicate images across folds; a single
+seed per run; the test set has only 30 defects.
