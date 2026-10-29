@@ -199,3 +199,29 @@ Final models and thresholds (this replaces the amendment's wording only where st
 the final CNN is trained once on train_normal plus all 70 development defects. The decision
 threshold of each model is the 95th percentile of its scores on the 200 validation normals;
 an image is flagged if its score is strictly above it. Weights are not committed to Git.
+## Test run plan (written before any test image was scored)
+
+Seen before writing this: E4 (anomaly pointing 0.96; Grad-CAM layer3 0.43, layer4 0.27, as
+predicted) and the final thresholds (CNN -0.560, anomaly 1.886; each flags 10 of the 200
+validation normals; the anomaly detector catches 65 of 70 development defects).
+
+Models: the final anomaly detector (384x512, 5% bank, seed 0, train_normal only) and the
+final CNN (train_normal plus all 70 development defects, 288x384, 6 epochs, seed 0).
+Thresholds come from eval/thresholds_final_pcb1.json; an image is flagged if its score is
+strictly above the threshold.
+
+Reported for both models on the 30 test defects and the 200 test normals:
+- defects caught of 30, with an exact 95% interval;
+- false-alarm rate on the 200 test normals, with an exact 95% interval;
+- AUROC with a 95% bootstrap interval, and the paired AUROC difference with a paired
+  bootstrap interval;
+- end-to-end CPU latency per image (image loading included, warm-up excluded).
+Secondary: the anomaly detector at the older 90%-recall threshold (1.943).
+No per-type results are interpreted (4 to 14 test defects per type).
+
+Expectation, written in advance: the two models will be statistically indistinguishable in
+AUROC (development difference +0.001, interval -0.009 to +0.010), and false-alarm rates under
+the 5% rule will fall between roughly 2% and 8%, given 200 normals.
+
+No setting is changed after the test numbers are seen. If a technical failure happens before
+results are saved, the run may be repeated, and that is noted here.
