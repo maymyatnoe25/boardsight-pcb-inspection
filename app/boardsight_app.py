@@ -95,8 +95,8 @@ def test_table():
         f = binomtest(m["false_alarms"], 200).proportion_ci(confidence_level=0.95, method="exact")
         lat = r["latency_ms"]["anomaly" if key.startswith("anomaly") else "cnn"]
         rows.append({"Model": name,
-                     "Defects caught (of 30)": f"{m['caught']} ({c.low:.0%} to {c.high:.0%})",
-                     "False alarms (of 200 good boards)": f"{m['false_alarms']} ({f.low:.1%} to {f.high:.1%})",
+                     "Defects caught (of 30)": f"{m['caught']} = {m['caught'] / 30:.0%} ({c.low:.0%} to {c.high:.0%})",
+                     "False alarms (of 200 good boards)": f"{m['false_alarms']} = {m['false_alarms'] / 200:.1%} ({f.low:.1%} to {f.high:.1%})",
                      "AUROC": f"{m['auroc']:.3f} ({m['auroc_ci'][0]:.3f} to {m['auroc_ci'][1]:.3f})",
                      "Time per image (ms)": round(lat)})
     return pd.DataFrame(rows), r
@@ -110,18 +110,46 @@ st.warning("Trained on one board type only (VisA PCB1). Other boards, cameras or
 
 ex, bank, cnn, th = load_models()
 split = pd.read_csv(Path("eval") / f"split_{BOARD}.csv")
-samples = pd.concat([split[split.role == "dev_defect"].head(15),
-                     split[split.role == "val_normal"].head(15)]).sample(frac=1, random_state=0)
-samples = samples.reset_index(drop=True)
 
-choice = st.radio("Image source", ["Sample board", "Upload a photo"], horizontal=True)
-img, mask_rel, truth = None, None, None
-if choice == "Sample board":
-    k = st.selectbox("Choose a sample", range(len(samples)), format_func=lambda i: f"Sample {i + 1}")
-    row = samples.iloc[k]
+
+@st.cache_data
+def load_test_boards():
+    t = pd.read_csv(Path("eval") / f"test_scores_{BOARD}.csv")
+    t = t.merge(split[["image", "mask"]], on="image", how="left")
+    fa, fc = t.anomaly_score > th["anomaly"], t.cnn_score > th["cnn"]
+    is_def = t.role == "test_defect"
+    t["kind"] = np.where(is_def, "defective (" + t.label + ")", "good board")
+    t["outcome"] = np.select(
+        [is_def & fa & fc, is_def & fa, is_def & fc, is_def,
+         ~is_def & fa & fc, ~is_def & fa, ~is_def & fc],
+        ["caught by both", "caught by the anomaly detector only", "caught by the CNN only",
+         "missed by both", "false alarm from both", "false alarm from the anomaly detector",
+         "false alarm from the CNN"],
+        default="correctly not flagged")
+    return t
+
+
+boards = load_test_boards()
+
+choice = st.radio("Image source", ["Held-out test board", "Upload a photo"], horizontal=True)
+img, mask_rel, truth, saved = None, None, None, None
+if choice == "Held-out test board":
+    show = st.selectbox("Which boards", ["All 230 test boards",
+                                          "Defects not caught by both models", "False alarms"])
+    if show.startswith("Defects"):
+        pool = boards[(boards.role == "test_defect") & (boards.outcome != "caught by both")]
+    elif show == "False alarms":
+        pool = boards[boards.outcome.str.startswith("false alarm")]
+    else:
+        pool = boards.sample(frac=1, random_state=0)
+    pool = pool.reset_index(drop=True)
+    k = st.selectbox("Choose a board", range(len(pool)),
+                     format_func=lambda i: f"{i + 1}. {pool.kind.iloc[i]}: {pool.outcome.iloc[i]}")
+    row = pool.iloc[k]
     img = Image.open(ROOT / row["image"])
     mask_rel = row["mask"] if isinstance(row["mask"], str) else None
-    truth = row["label"]
+    truth = f"{row['kind']}, {row['outcome']}"
+    saved = (row["anomaly_score"], row["cnn_score"])
 else:
     up = st.file_uploader("Photo of a circuit board", type=["jpg", "jpeg", "png"])
     if up:
@@ -146,9 +174,10 @@ if img is not None:
     c1.caption(f"Computed in {t_an * 1000:.0f} ms. A distance, not a probability.")
     c2.metric("CNN score", f"{s_cnn:.2f}", f"flag above {th['cnn']:.2f}", delta_color="off")
     c2.caption(f"Computed in {t_cnn * 1000:.0f} ms. A raw model output, not a probability.")
-    if truth is not None:
-        st.caption(f"Ground truth for this sample (demo only): {truth}. "
-                   "The heatmap outlines the true defect when there is one.")
+    if saved is not None:
+        st.caption(f"Scores saved in the test run: anomaly {saved[0]:.2f}, CNN {saved[1]:.2f}. "
+                   "They should match the live scores above. Times shown include warm-up, so "
+                   "they exceed the 48 and 1,216 ms in the table.")
 
 st.divider()
 st.subheader("How well did it work on boards it had never seen?")
