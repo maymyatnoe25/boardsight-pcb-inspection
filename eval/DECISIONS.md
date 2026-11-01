@@ -225,3 +225,23 @@ the 5% rule will fall between roughly 2% and 8%, given 200 normals.
 
 No setting is changed after the test numbers are seen. If a technical failure happens before
 results are saved, the run may be repeated, and that is noted here.
+## Test results (recorded after the single test run, code version e2f9bcc)
+
+Test set: 30 defective and 200 normal PCB1 images, scored once.
+
+Anomaly detector (384x512, 5% bank), threshold 1.886: caught 26/30 (87%, exact 95% interval
+69% to 96%); false alarms 7/200 (3.5%, 1.4% to 7.1%); AUROC 0.976 (bootstrap 0.956 to 0.993).
+CNN (288x384, trained on all 70 development defects), threshold -0.560: caught 28/30 (93%,
+78% to 99%); false alarms 15/200 (7.5%, 4.3% to 12.1%); AUROC 0.989 (0.975 to 0.999).
+AUROC difference, CNN minus anomaly: +0.013 (paired bootstrap -0.008 to +0.037): no clear
+difference.
+Secondary: anomaly detector at the older 90%-recall threshold 1.943: caught 23/30 (77%,
+58% to 90%); false alarms 5/200 (2.5%).
+Latency per image on this CPU, loading included: anomaly 1216 ms, CNN 48 ms.
+
+Against the expectations written in advance: AUROC indistinguishable (held); false-alarm
+rates within 2% to 8% (held).
+Notes: the two false-alarm rates differ, so the caught counts are not at equal false-alarm
+rates. The detector's validation AUROC was 0.991 and its test AUROC 0.976, within its test
+interval. The default configuration was not scored on the test set, so the test data cannot
+show whether the tuning helped.

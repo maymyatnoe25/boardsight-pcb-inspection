@@ -1,0 +1,42 @@
+{
+ "commit": "e2f9bccf0f5bb3754ea01bd143a9dd9f01895f61",
+ "thresholds": {
+  "cnn": -0.5596405863761902,
+  "anomaly": 1.885602855,
+  "anomaly_old": 1.9431479
+ },
+ "anomaly detector": {
+  "threshold": 1.885602855,
+  "caught": 26,
+  "false_alarms": 7,
+  "auroc": 0.976,
+  "auroc_ci": [
+   0.9556666666666667,
+   0.992675
+  ]
+ },
+ "CNN": {
+  "threshold": -0.5596405863761902,
+  "caught": 28,
+  "false_alarms": 15,
+  "auroc": 0.9891666666666667,
+  "auroc_ci": [
+   0.9745,
+   0.9990000000000001
+  ]
+ },
+ "anomaly at old 90%-recall threshold": {
+  "threshold": 1.9431479,
+  "caught": 23,
+  "false_alarms": 5
+ },
+ "auroc_diff": 0.013166666666666771,
+ "auroc_diff_ci": [
+  -0.007666666666666602,
+  0.03683333333333328
+ ],
+ "latency_ms": {
+  "anomaly": 1215.832265035715,
+  "cnn": 47.80116998590529
+ }
+}
